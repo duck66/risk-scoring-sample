@@ -1,3 +1,44 @@
+import random
+
+def new_user_large_tx(tx):
+    return tx["is_new_user"] and tx["amount"] > 5000
+
+
+BASE_RULE_SET = {
+    "HIGH_AMOUNT": {
+        "trx_key": "amount",
+        "operator": ">",
+        "value": 10000,
+        "score": 40,
+    },
+    "RISKY_COUNTRY": {
+        "trx_key": "country",
+        "operator": "in",
+        "value": {"NG", "PK", "RU"},
+        "score": 30,
+    },
+    "FAILED_ATTEMPTS": {
+        "trx_key": "failed_attempts",
+        "operator": ">=",
+        "value": 3,
+        "score": 35,
+    },
+    "HIGH_VELOCITY": {
+        "trx_key": "recent_tx_count",
+        "operator": ">=",
+        "value": 5,
+        "score": 30,
+    }
+}
+
+MULTIPLE_RULE_SET = {
+    "NEW_USER_LARGE_TX": {
+        "function": new_user_large_tx,
+        "score": 25,
+    }
+}
+
+
 def calculate_risk_score(tx):
     triggered = []
     score = 0
@@ -45,11 +86,11 @@ def determine_risk_level(score):
 def main():
     # Sample transaction data
     transaction = {
-        "amount": 15000,
-        "country": "NG",
-        "is_new_user": True,
-        "failed_attempts": 2,
-        "recent_tx_count": 6
+        "amount": random.randint(1000, 20000),
+        "country": random.choice(["NG", "PK", "RU", "US", "GB"]),
+        "is_new_user": random.choice([True, False]),
+        "failed_attempts": random.randint(0, 5),
+        "recent_tx_count": random.randint(0, 10)
     }
 
     risk_score, triggered_rules = calculate_risk_score(transaction)
