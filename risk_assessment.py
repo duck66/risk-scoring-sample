@@ -44,19 +44,24 @@ OPERATORS = {
     "in": lambda a, b: a in b,
 }
 
-def calculate_risk_score(tx):
+def calculate_risk_score(trx):
     triggered = []
     score = 0
 
     for rule_name, rule in BASE_RULE_SET.items():
-        if OPERATORS[rule["operator"]](tx[rule["trx_key"]], rule["value"]):
+        operator = OPERATORS[rule["operator"]]
+        trx_value = trx[rule["trx_key"]]
+        compre_value = rule["value"]
+
+        if operator(trx_value, compre_value):
             score += rule["score"]
             triggered.append(rule_name)
     
     for rule_name, rule in MULTIPLE_RULE_SET.items():
-        if rule["function"](tx):
+        if rule["function"](trx):
             score += rule["score"]
             triggered.append(rule_name)
+
     return score, triggered
 
 
@@ -74,7 +79,7 @@ def determine_risk_level(score):
 
 
 def main():
-    # Sample transaction data
+    # Generate random transaction data for testing
     transaction = {
         "amount": random.randint(1000, 20000),
         "country": random.choice(["NG", "PK", "RU", "US", "GB"]),
@@ -86,7 +91,13 @@ def main():
     risk_score, triggered_rules = calculate_risk_score(transaction)
     risk_level, action = determine_risk_level(risk_score)
 
-    print(f"Transaction: {transaction}")
+    print(f"=====Transaction Details=====")
+    print(f"Amount: {transaction['amount']}")
+    print(f"Country: {transaction['country']}")
+    print(f"Is New User: {transaction['is_new_user']}")
+    print(f"Failed Attempts: {transaction['failed_attempts']}")
+    print(f"Recent Transaction Count: {transaction['recent_tx_count']}")
+    print(f"==============================")
     print(f"Risk Score: {risk_score}")
     print(f"Triggered Rules: {triggered_rules}")
     print(f"Risk Level: {risk_level}")
