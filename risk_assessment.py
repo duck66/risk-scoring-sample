@@ -38,35 +38,25 @@ MULTIPLE_RULE_SET = {
     }
 }
 
+OPERATORS = {
+    ">": lambda a, b: a > b,
+    ">=": lambda a, b: a >= b,
+    "in": lambda a, b: a in b,
+}
 
 def calculate_risk_score(tx):
     triggered = []
     score = 0
-    # Finance risk assessment based on transaction attributes
-    if tx["amount"] > 10000:
-        score += 40
-        triggered.append("HIGH_AMOUNT")
 
-    # Geographical risk based on country
-    high_risk_countries = {"NG", "PK", "RU"}
-    if tx["country"] in high_risk_countries:
-        score += 30
-        triggered.append("RISKY_COUNTRY")
-
-    # User behavior risk
-    if tx["is_new_user"] and tx["amount"] > 5000:
-        score += 25
-        triggered.append("NEW_USER_LARGE_TX")
-
-    if tx["failed_attempts"] >= 3:
-        score += 35
-        triggered.append("FAILED_ATTEMPTS")
-
-    # Velocity risk based on recent transaction count
-    if tx["recent_tx_count"] >= 5:
-        score += 30
-        triggered.append("HIGH_VELOCITY")
-
+    for rule_name, rule in BASE_RULE_SET.items():
+        if OPERATORS[rule["operator"]](tx[rule["trx_key"]], rule["value"]):
+            score += rule["score"]
+            triggered.append(rule_name)
+    
+    for rule_name, rule in MULTIPLE_RULE_SET.items():
+        if rule["function"](tx):
+            score += rule["score"]
+            triggered.append(rule_name)
     return score, triggered
 
 
